@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [1.4.0] - 2026-03-15
+
+### 🐛 Fix descarga yt-dlp + limpieza PATH Python
+
+#### Backend (`server.py`)
+- Comando `yt-dlp` sustituido por `py -3.12 -m yt_dlp` en `run_download_and_index()`.
+  El wrapper `yt-dlp.exe` del PATH apuntaba a Python314 inexistente y salía con código 1 silenciosamente.
+
+#### Entorno Windows (PATH usuario)
+- Eliminadas `C:\Python314` y `C:\Python314\Scripts` del PATH de usuario.
+- `PY_PYTHON=3.12` fijado como variable de entorno de usuario → `py` sin versión explícita va siempre a 3.12.
+- Python 3.14 sigue instalado en `C:\Python314` y accesible con `py -3.14` si hace falta.
+
+#### Aclaración arquitectura (sin cambios en código)
+- PyTorch + CUDA + ChromaDB son exclusivos de **AstroExtracto** (embeddings locales).
+- **VerbaSant** no usa inferencia local: búsqueda por keywords en Python puro + llamadas a APIs externas.
+
+---
+
 ## [1.3.0] - 2026-03-15
 
 ### ✨ RAG básico: búsqueda por keywords + transcripción completa

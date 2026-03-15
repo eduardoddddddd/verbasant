@@ -289,9 +289,9 @@ def run_download_and_index(url, lang):
         log(f"   Idiomas: {lang}")
         log("─" * 50)
 
-        # Comando yt-dlp — igual que AstroExtracto
+        # Comando yt-dlp via py -3.12 para evitar el wrapper roto de Python314
         cmd = [
-            "yt-dlp",
+            "py", "-3.12", "-m", "yt_dlp",
             "--skip-download",
             "--write-auto-subs",
             "--write-subs",

@@ -1,5 +1,35 @@
 # 🔍 Resumen de cambios (marzo 2026)
 
+## Sesión 2026-03-15 (tarde) — Fix yt-dlp + limpieza entorno Python
+
+### 1. Fix descarga (`server.py`)
+`yt-dlp` en el PATH apuntaba al wrapper de Python314 (`C:\Users\Edu\AppData\Local\Programs\Python\Python314\Scripts\yt-dlp.exe`) cuyo intérprete no existía en esa ruta — salía con código 1 sin output.
+
+Solución: cambiar el comando en `run_download_and_index()`:
+```python
+# Antes
+cmd = ["yt-dlp", ...]
+# Ahora
+cmd = ["py", "-3.12", "-m", "yt_dlp", ...]
+```
+
+### 2. Limpieza PATH de usuario
+- Eliminadas `C:\Python314` y `C:\Python314\Scripts` del PATH de usuario.
+- `PY_PYTHON=3.12` fijado → `py` sin versión siempre resuelve a Python 3.12.
+- Python 3.14 accesible con `py -3.14` si se necesita explícitamente.
+
+### 3. Aclaración arquitectura
+- **PyTorch + CUDA + ChromaDB** → exclusivo de AstroExtracto (embeddings semánticos locales con e5-large en RTX 4070).
+- **VerbaSant** → sin inferencia local. Búsqueda por keywords en Python puro + APIs externas (Gemini, Anthropic, OpenAI).
+
+### Estado paquetes clave en Python 3.12
+| Paquete | Versión |
+|---|---|
+| google-generativeai | 0.8.6 |
+| yt-dlp | 2026.03.13 |
+
+---
+
 ## Sesión 2026-03-15 — Fixes Gemini + RAG básico por keywords
 
 ### 1. Fixes críticos Gemini (`server.py`)
