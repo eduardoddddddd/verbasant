@@ -141,7 +141,125 @@
     align-items: center;
     gap: 8px;
   }
-  .dl-status .spinner { width: 10px; height: 10px; border-width: 1px; }
+   .dl-status .spinner { width: 10px; height: 10px; border-width: 1px; }
+
+  /* ── LLM PANEL ── */
+  #llm-panel {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    padding: 40px 64px;
+    max-width: 900px;
+    overflow-y: auto;
+    height: 100%;
+  }
+  #llm-panel.visible { display: flex; }
+
+  .llm-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .llm-subtitle { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  .llm-field label {
+    display: block;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .llm-field textarea {
+    width: 100%;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+    min-height: 100px;
+  }
+  .llm-field textarea:focus { border-color: var(--gold-dim); }
+  .llm-field textarea::placeholder { color: var(--text-dim); }
+
+  .llm-field select,
+  .llm-field input {
+    width: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .llm-field select:focus,
+  .llm-field input:focus { border-color: var(--gold-dim); }
+  .llm-field .llm-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  .llm-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 9px 22px;
+    border-radius: 4px;
+    border: 1px solid var(--gold-dim);
+    background: var(--gold-glow);
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    align-self: flex-start;
+  }
+  .llm-btn:hover { background: rgba(200,164,74,0.2); border-color: var(--gold); }
+  .llm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  #llm-response {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 150px;
+    max-height: 500px;
+    overflow-y: auto;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    display: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  #llm-response.visible { display: block; }
+
+  .llm-loading {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .llm-loading .spinner { width: 10px; height: 10px; border-width: 1px; }
+
+  #llm-response.error {
+    border-color: var(--red);
+    background: rgba(184,50,50,0.05);
+    color: var(--red);
+  }
 
   /* ── TOPBAR ── */
   #topbar {
@@ -757,6 +875,7 @@
     <div id="logo" onclick="setAppTab('library')">Verba<span>tube</span></div>
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-library" onclick="setAppTab('library')">Biblioteca</button>
+      <button class="nav-tab" id="tab-llm" onclick="setAppTab('llm')">🤖 Preguntas IA</button>
       <button class="nav-tab" id="tab-download" onclick="setAppTab('download')">+ Descargar</button>
     </div>
     <div class="top-divider"></div>
@@ -814,6 +933,36 @@
       <div id="dl-log"></div>
     </div>
 
+    <!-- LLM Query panel -->
+    <div id="llm-panel">
+      <div>
+        <div class="llm-title">Consultar con IA 🤖</div>
+        <div class="llm-subtitle">Haz preguntas complejas sobre el contenido de tus vídeos. La IA tiene acceso a todos los subtítulos indexados y puede analizar patrones, temas y conexiones.</div>
+      </div>
+      <div class="llm-field">
+        <label for="llm-provider">Proveedor LLM</label>
+        <select id="llm-provider"></select>
+      </div>
+      <div class="llm-field">
+        <label for="llm-model">Modelo</label>
+        <select id="llm-model"></select>
+      </div>
+      <div class="llm-field">
+        <label for="llm-api-key">Clave API</label>
+        <input id="llm-api-key" type="password" autocomplete="new-password" placeholder="Introduce tu API key (ej. sk_… o token de Google)"/>
+        <div class="llm-hint">La clave se usa solo en esta sesión y no se almacena en el servidor (para Gemini responde al prompt del servidor).</div>
+      </div>
+      <div class="llm-field">
+        <label>Tu pregunta</label>
+        <textarea id="llm-query" placeholder="Ej: ¿Cuáles son los temas principales sobre astrología que se mencionan? ¿Hay alguna conexión entre los vídeos de diferentes canales?"></textarea>
+      </div>
+      <button class="llm-btn" id="llm-send-btn" onclick="sendLLMQuery()">▶ Enviar pregunta</button>
+      <div class="llm-loading" id="llm-loading" style="display:none">
+        <span class="spinner"></span><span>Procesando consulta…</span>
+      </div>
+      <div id="llm-response"></div>
+    </div>
+
     <div id="library-view" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
     <div id="empty-state">
       <div class="empty-icon">◈</div>
@@ -854,6 +1003,32 @@ let inlineMatches = [];
 let inlineCurrent = 0;
 let loadedCues = []; // parsed cues for active video
 let searchTimer = null;
+const LLM_PROVIDER_MAP = {
+  anthropic: {
+    label: "Anthropic Claude",
+    models: [
+      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (predeterminado)" },
+      { value: "claude-3-5-sonnet-20241401", label: "Claude 3.5 Sonnet (tester)" },
+      { value: "claude-3-opus-20250219", label: "Claude 3 Opus" }
+    ]
+  },
+  openai: {
+    label: "OpenAI Chat",
+    models: [
+      { value: "gpt-4o-mini", label: "GPT-4o Mini (económico)" },
+      { value: "gpt-4o", label: "GPT-4o (responsivo)" },
+      { value: "gpt-4o-mini-2024-12-17", label: "GPT-4o Mini v2024-12-17" }
+    ]
+  },
+  gemini: {
+    label: "Google Gemini",
+    models: [
+      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (free tier)" },
+      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash (requiere billing)" }
+    ]
+  }
+};
 
 // ── UTILS ──
 function formatDate(d) {
@@ -911,6 +1086,27 @@ function setLoadMsg(msg) {
   document.getElementById("load-msg").textContent = msg;
 }
 
+function setupLLMSelectors() {
+  const providerSelect = document.getElementById('llm-provider');
+  if (!providerSelect) return;
+
+  providerSelect.innerHTML = Object.entries(LLM_PROVIDER_MAP)
+    .map(([key, info]) => `<option value="${key}">${info.label}</option>`)
+    .join('');
+  providerSelect.addEventListener('change', () => updateLLMModelOptions(providerSelect.value));
+  updateLLMModelOptions(providerSelect.value);
+}
+
+function updateLLMModelOptions(providerKey) {
+  const modelSelect = document.getElementById('llm-model');
+  if (!modelSelect) return;
+  const provider = LLM_PROVIDER_MAP[providerKey] || LLM_PROVIDER_MAP.anthropic;
+  modelSelect.innerHTML = provider.models
+    .map(m => `<option value="${m.value}">${m.label}</option>`)
+    .join('');
+  modelSelect.value = provider.models[0].value;
+}
+
 // ── INIT ──
 function init() {
   updateStats();
@@ -946,6 +1142,7 @@ function init() {
   inSrch.addEventListener("keydown", e => {
     if (e.key === "Enter") navigateMatches(e.shiftKey ? -1 : 1);
   });
+  setupLLMSelectors();
 }
 
 function updateStats() {
@@ -1343,10 +1540,16 @@ function setViewMode(mode) {
 // ── APP TABS ──
 function setAppTab(tab) {
   const isDownload = tab === 'download';
+  const isLLM = tab === 'llm';
+  const isLibrary = tab === 'library';
+  
   document.getElementById('download-panel').classList.toggle('visible', isDownload);
-  document.getElementById('library-view').style.display = isDownload ? 'none' : 'flex';
-  document.getElementById('tab-library').classList.toggle('active', !isDownload);
+  document.getElementById('llm-panel').classList.toggle('visible', isLLM);
+  document.getElementById('library-view').style.display = (isDownload || isLLM) ? 'none' : 'flex';
+  
+  document.getElementById('tab-library').classList.toggle('active', isLibrary);
   document.getElementById('tab-download').classList.toggle('active', isDownload);
+  document.getElementById('tab-llm').classList.toggle('active', isLLM);
 }
 
 // ── DOWNLOAD TAB ──
@@ -1408,6 +1611,70 @@ function pollLog() {
         setTimeout(() => { if (confirm('¿Recargar la biblioteca con los nuevos vídeos?')) location.reload(); }, 500);
       }
     });
+}
+
+// ── LLM TAB ──
+
+async function sendLLMQuery() {
+  const query = document.getElementById('llm-query').value.trim();
+  if (!query) {
+    alert('Por favor, escribe una pregunta');
+    return;
+  }
+  const provider = document.getElementById('llm-provider').value;
+  const model = document.getElementById('llm-model').value;
+  const apiKey = document.getElementById('llm-api-key').value.trim();
+  if (!apiKey) {
+    alert('Introduce una clave API para el proveedor seleccionado antes de enviar la consulta.');
+    return;
+  }
+  
+  const loadingEl = document.getElementById('llm-loading');
+  const responseEl = document.getElementById('llm-response');
+  const btnEl = document.getElementById('llm-send-btn');
+  
+  // UI: mostrar loading
+  loadingEl.style.display = 'flex';
+  responseEl.classList.remove('visible', 'error');
+  btnEl.disabled = true;
+  
+  try {
+    // Preparar contexto: videos seleccionados (opcional) o todos
+    const selectedVideos = [];
+    if (activeVideoId && index) {
+      const video = index.videos.find(v => v.video_id === activeVideoId);
+      if (video) selectedVideos.push(video);
+    }
+    
+    // Enviar consulta
+    const response = await fetch('/api/llm-query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: query,
+        videos: selectedVideos,
+        provider,
+        model,
+        api_key: apiKey
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.ok) {
+      responseEl.textContent = data.response;
+      responseEl.classList.add('visible');
+    } else {
+      responseEl.textContent = `❌ Error: ${data.error}`;
+      responseEl.classList.add('visible', 'error');
+    }
+  } catch (e) {
+    responseEl.textContent = `❌ Error de conexión: ${e.message}`;
+    responseEl.classList.add('visible', 'error');
+  } finally {
+    loadingEl.style.display = 'none';
+    btnEl.disabled = false;
+  }
 }
 
 // ── BOOT ──
